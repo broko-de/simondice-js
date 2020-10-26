@@ -1,0 +1,17 @@
+{
+  "name": "simondice",
+  "version": "1.0.0",
+  "description": "Juego de Simon dice desarrollado en js",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "juego",
+    "js",
+    "simondice",
+    "javascript"
+  ],
+  "author": "Federico Liquin",
+  "license": "MIT"
+}

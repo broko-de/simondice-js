@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simon Dice</title>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        background: #dedede;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .gameboard {
+        height: 100vh;
+        width: 100vh;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        max-height: 60vh;
+        max-width: 60vh;
+      }
+
+      .color {
+        width: 50%;
+        height: 50%;
+        display: inline-block;
+      }
+
+      .left {
+        float: left;
+      }
+
+      .right {
+        float: left;
+      }
+
+      .celeste {
+        background: #22a6b3;
+      }
+
+      .celeste.light {
+        background: #7ed6df;
+      }
+
+      .violeta {
+        background: #be2edd;
+      }
+
+      .violeta.light {
+        background: #e056fd;
+      }
+
+      .naranja {
+        background: #f0932b;
+      }
+
+      .naranja.light {
+        background: #ffbe76;
+      }
+
+      .verde {
+        background: #6ab04c;
+      }
+
+      .verde.light {
+        background: #badc58;
+      }
+
+      .btn-start {
+        width: 400px;
+        height: 100px;
+        background: #ecf0f1;
+        color: #2c3e50;
+        font-size: 2.5rem;
+        position: absolute;
+        top: calc(50% - 50px);
+        left: calc(50% - 200px);
+      }
+
+      .hide {
+        display: none;
+      }
+
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="gameboard">
+      <div id="celeste" class="color celeste left" data-color="celeste"></div>
+      <div id="violeta" class="color violeta right" data-color="violeta"></div>
+      <div id="naranja" class="color naranja left" data-color="naranja"></div>
+      <div id="verde" class="color verde right" data-color="verde"></div>
+      <button id="btnEmpezar" class="btn-start" onclick="empezarJuego()">Empezar a jugar!</button>
+    </div>
+    <script>
+        const celeste = document.getElementById('celeste')
+        const violeta = document.getElementById('violeta')
+        const naranja = document.getElementById('naranja')
+        const verde = document.getElementById('verde')
+        const btnEmpezar = document.getElementById('btnEmpezar')
+        const ULTIMO_NIVEL = 1;
+
+        class Juego {
+            constructor() {
+                this.inicializar();
+                this.generarSecuencia();
+                setTimeout(this.siguienteNivel,500)
+            }
+
+            inicializar() {
+                this.elegirColor = this.elegirColor.bind(this); // para hacerlo de una sola vez y no perder el contexto de this en la funcion elegir color
+                this.siguienteNivel = this.siguienteNivel.bind(this); //la funcion no va cambiar el contenxto
+                this.toggleBtnEmpezar();
+                this.nivel = 1;
+                this.colores = {
+                    celeste,
+                    violeta,
+                    naranja,
+                    verde
+                }
+            }
+
+            toggleBtnEmpezar(){
+                if(btnEmpezar.classList.contains('hide')){
+                    btnEmpezar.classList.remove('hide');
+                }else{
+                    btnEmpezar.classList.add('hide');
+
+                }
+            }
+
+            generarSecuencia(){
+                /* 
+                    Con fill estoy asignando el valor de 0 todas las posiciones del array
+                    Con Map estoy recorriendo y asignado un valor random entre 0 y 4
+                    Con Math.floor lo que hago es redondear para abajo
+                */
+                this.secuencia = new Array(ULTIMO_NIVEL).fill(0).map(n => Math.floor(Math.random() * 4))
+                console.log(this.secuencia);
+            }
+
+            siguienteNivel(){
+                this.subnivel = 0; //cada vez que pase de nivel el subnivel se volvera a 0
+                console.log(this);
+                this.iluminarSecuencia();
+                this.agregarEventosClick();
+            }
+
+            /*
+                METODO PARA DEVOLVER UN COLOR A PARTIR DE UN NUMERO DEL ARRAY RANDOM
+            */
+            transformarNumeroAColor(numero){
+                switch (numero) {
+                    case 0:
+                        return 'celeste';                    
+                    case 1:
+                        return 'violeta';
+                    case 2:
+                        return 'naranja';
+                    case 3:
+                        return 'verde';
+                }
+            }
+
+            /*
+                METODO PARA DEVOLVER UN NUMERP A PARTIR DE UN COLOR
+            */
+            transformarColorANumero(color){
+                switch (color) {
+                    case 'celeste':
+                        return 0;                    
+                    case 'violeta':
+                        return 1;
+                    case 'naranja':
+                        return 2;
+                    case 'verde':
+                        return 3;
+                }
+            }
+
+            iluminarSecuencia(){
+                // recorro por nivel e ilumino el color de acuerdo al array de secuencia
+                for (var i = 0; i < this.nivel; i++) {
+                    let color = this.transformarNumeroAColor(this.secuencia[i])
+                    console.log(color)
+                    // PARA QUE LOS COLORES SE ILUMINEN CADA CIERTO SEGUNDO SEGUN EL NIVEL
+                    setTimeout(()=>{
+                        this.iluminarColor(color)
+                    },1000*i);
+                }
+            }
+
+            iluminarColor(color){
+                this.colores[color].classList.add('light');
+                setTimeout(()=> this.apagarColor(color),500);
+            }
+
+            apagarColor(color){
+                this.colores[color].classList.remove('light');
+            }
+
+            /*
+            METODO QUE ESTARA ESCUCHANDO EL EVENTO CLICK DE CADA COLOR
+            con .bind(this) se usa para no perder la referencia a la clase Juego y sus atributos
+            */
+            agregarEventosClick(){
+                //this.colores.celeste.addEventListener('click',this.elegirColor.bind(this));
+                this.colores.celeste.addEventListener('click',this.elegirColor);
+                this.colores.verde.addEventListener('click',this.elegirColor);
+                this.colores.violeta.addEventListener('click',this.elegirColor);
+                this.colores.naranja.addEventListener('click',this.elegirColor);
+
+            }
+
+            eliminarEventosClick(){
+                //this.colores.celeste.addEventListener('click',this.elegirColor.bind(this));
+                this.colores.celeste.removeEventListener('click',this.elegirColor);
+                this.colores.verde.removeEventListener('click',this.elegirColor);
+                this.colores.violeta.removeEventListener('click',this.elegirColor);
+                this.colores.naranja.removeEventListener('click',this.elegirColor);
+
+            }
+
+            //EN EL CASO DE SER UN METODO QUE RESUELVE UN EVENTO, "THIS" pasa a ser el elemento al que se le ejecuto el evento
+            elegirColor(ev){
+                console.log();
+                let nombreColor = ev.target.dataset.color;
+                let numeroColor = this.transformarColorANumero(nombreColor);
+                this.iluminarColor(nombreColor);
+                if(numeroColor === this.secuencia[this.subnivel]){ //si el usuario acerto el color paso a la siguiente secuencia de ese nivel
+                    this.subnivel++; 
+                    if(this.subnivel === this.nivel){ // si el usuario completo la seucuencia debe pasar al siguiente nivel
+                        this.nivel++;
+                        this.eliminarEventosClick(); // ya no debe seguir seleccionado colores si completo la secuencia.
+                        if(this.nivel === (ULTIMO_NIVEL+1)){ //SI EL USUARIO GANO
+                            this.ganoElJuego();
+                        }else{
+                            setTimeout(this.siguienteNivel,1500);
+                        }
+                    }
+                }else{// si el usuario se equivoco perdio
+                    this.perdioElJuego();
+                }
+            }
+
+            ganoElJuego(){
+                swal('Plazti','Felicidades, ganaste el juego!','success')
+                    .then(this.inicializar.bind(this))
+            }
+
+            perdioElJuego(){
+                swal('Plazti','Perdiste en el juego!','error')
+                    .then(() => {
+                        this.eliminarEventosClick();
+                        this.inicializar();
+                    });
+            }
+        }
+
+        function empezarJuego() {
+            var juego = new Juego() //poniendola en windows puedo debugear en la cosola
+
+        }
+    </script>
+  </body>
+</html>
